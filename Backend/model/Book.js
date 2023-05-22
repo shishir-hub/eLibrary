@@ -25,6 +25,13 @@ const BookSchema = new Schema({
         type: Number,
         required: true,
     },
+    rating: {
+        type: [Number]
+    },
+    reviewed_by: {
+        type: [ObjectId],
+        ref: 'User',
+    }
 });
 
 module.exports = mongoose.model('Book', BookSchema);

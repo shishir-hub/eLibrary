@@ -5,7 +5,23 @@ const User = require("../model/User");
 
 const getBook = async (req, res, next) => {
     try {
-        let books = await Book.aggregate();
+        let search_term = RegExp(req.query.search_term, 'i');
+        let books = await Book.aggregate([
+            {
+                $match: { $or: [{ title: search_term }, { author: search_term }, { genre: search_term }] }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'user_id',
+                    foreignField: '_id',
+                    as: 'uploaded_by',
+                }
+            },
+            {
+                $unwind: '$uploaded_by'
+            },
+        ]);
 
         res.send({
             data: books,
@@ -18,14 +34,15 @@ const getBook = async (req, res, next) => {
 
 const getMyBook = async (req, res, next) => {
     try {
+        let search_term = RegExp(req.query.search_term, 'i');
         let user = await User.findById(req.params.id);
         let my_books = await Book.aggregate([
             {
-                $match: { user_id: user._id }
+                $match: { $and: [{ user_id: user._id }, { $or: [{ title: search_term }, { author: search_term }, { genre: search_term }] }] }
             },
             {
                 $lookup: {
-                    from: 'User',
+                    from: 'users',
                     localField: 'user_id',
                     foreignField: '_id',
                     as: 'uploaded_by',
@@ -38,7 +55,7 @@ const getMyBook = async (req, res, next) => {
 
         res.send({
             data: my_books,
-            msg: "All Books"
+            msg: "My All Books"
         })
     } catch (error) {
         next(error);

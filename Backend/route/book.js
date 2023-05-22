@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/book', getBook);
 
-router.get('/book/:id', authenticate, getMyBook);
+router.get('/books/:id', authenticate, getMyBook);
 
 router.post('/book', authenticate, addBook);
 
